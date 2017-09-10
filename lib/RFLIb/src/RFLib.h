@@ -10,6 +10,7 @@ class RFLib {
     void initReceiver(int receivePin);
     void loop();
     void send(char* protocol, char* message);
+    void sendRaw(char* string);
     void setCallback(RFLibCallback callback );
     static RFLibCallback _callback;
   private:

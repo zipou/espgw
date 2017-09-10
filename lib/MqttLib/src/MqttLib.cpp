@@ -49,6 +49,10 @@ void MqttLib::subscribe(const char *topic) {
   _client.subscribe(topic);
 }
 
+void MqttLib::loop() {
+  _client.loop();
+}
+
 MqttLib::MqttLib() {
 
 }

@@ -9,10 +9,8 @@ Used to learn c++ and play with Arduino & ESP.
 ## How does it work
 
 Due to the size of the great RF Lib [https://github.com/puuu/ESPiLight](ESPiLight) and the lack of RAM on esp8866, you can't use SSL with MQTT *AND* load the RF library.
-So just for fun, I've had another ESP which talk to the first one through serial communication.
 
-The server will hold the SSL and the MQTT Connexion.
-The client esp will manage RF Signal (send & receive).
+So you have to use a esp32.
 
 ## Installation
 

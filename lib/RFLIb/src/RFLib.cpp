@@ -37,6 +37,14 @@ void RFLib::send(char* protocol, char* message) {
   _rf->send(String(protocol), String(message));
 };
 
+void RFLib::sendRaw(char* string) {
+  uint16_t codes[255];
+  // get pulse train from string (format see: pilight USB Nano)
+  int length = _rf->stringToPulseTrain(String(string), codes, 255);
+  // transmit the pulse train
+  _rf->sendPulseTrain(codes, length);
+}
+
 void RFLib::loop() {
   _rf->loop();
 }
