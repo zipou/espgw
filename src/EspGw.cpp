@@ -26,6 +26,17 @@ DHT dht(DHTPIN, DHT22);
 #include <Ticker.h>
 Ticker flipper;
 
+String getChipId() {
+    uint8_t chipid[6];
+    esp_efuse_read_mac(chipid);
+    String id= "";
+    for (int i = 0; i<= 5; i++) {
+      id += String(chipid[i], HEX);
+    }
+    return id;
+    // Serial.printf("%02x:%02x:%02x:%02x:%02x:%02x\n", chipid[0], chipid[1], chipid[2], chipid[3], chipid[4], chipid[5]);
+}
+
 void sendSensor() {
 
   int i = 0;
@@ -33,7 +44,7 @@ void sendSensor() {
   float h = 0;
   float t = 0;
   while (i <= tryHarder && (isnan(h) || h==0 ) ) {
-    Serial.println("Trying to read from DHT sensor!"); 
+    Serial.println("Trying to read from DHT sensor!");
     // Serial.println(i);
     h = dht.readHumidity();
     t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
@@ -53,6 +64,7 @@ void sendSensor() {
   message["humidity"] = h;
 
   JsonObject& root = jsonBuffer.createObject();
+  root["sensor"] = getChipId();
   root["protocol"] = "dht";
   root["data"] = message;
   char buffer[150];
@@ -83,6 +95,7 @@ void rfCallback(const char* protocol, const char* message) {
   // Serial.println(message);
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
+  root["sensor"] = getChipId();
   root["protocol"] = protocol;
   root["data"] = message;
   char buffer[150];
