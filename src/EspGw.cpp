@@ -1,12 +1,13 @@
 
 #define ICACHE_RAM_ATTR IRAM_ATTR
-/* Comment this out to disable prints and save space */
-#define BLYNK_PRINT Serial
 
 #include <const.h>
 #include <Arduino.h>
 // #include <ESP8266mDNS.h>
 // #include <ArduinoOTA.h>
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
 
 #include <ArduinoJson.h>
 
@@ -18,6 +19,47 @@ RFLib rf;
 
 #include <WifiLib.h>
 WifiLib wifi;
+
+#include <DHT.h>
+DHT dht(DHTPIN, DHT22);
+
+#include <Ticker.h>
+Ticker flipper;
+
+void sendSensor() {
+
+  int i = 0;
+  int tryHarder = 0;
+  float h = 0;
+  float t = 0;
+  while (i <= tryHarder && (isnan(h) || h==0 ) ) {
+    Serial.println("Trying to read from DHT sensor!"); 
+    // Serial.println(i);
+    h = dht.readHumidity();
+    t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
+    i = i + 1;
+  }
+
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+
+  Serial.println("Sending Info through mqtt");
+
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& message = jsonBuffer.createObject();
+  message["temperature"] = t;
+  message["humidity"] = h;
+
+  JsonObject& root = jsonBuffer.createObject();
+  root["protocol"] = "dht";
+  root["data"] = message;
+  char buffer[150];
+  root.printTo(buffer);
+  mqttlib.publish(MQTT_TOPIC_OUT, buffer);
+
+}
 
 void mqttCallback(const char* topic, const char* message) {
   // Serial.println("MQTTCallback");
@@ -33,16 +75,6 @@ void mqttCallback(const char* topic, const char* message) {
       // Serial.println(data);
       // Serial.println("PROTOCOL CODE SENT");
   }
-  if (strcmp(topic, MQTT_TOPIC_IN_RAW) == 0) {
-    rf.sendRaw((char*) message);
-    // Serial.println("RAW CODE SENT");
-  }
-}
-
-void serialCallback(const char* json) {
-  // Serial.println("SerialCallback");
-  // Serial.println(json);
-  mqttlib.publish(MQTT_TOPIC_OUT, json);
 }
 
 void rfCallback(const char* protocol, const char* message) {
@@ -61,7 +93,7 @@ void rfCallback(const char* protocol, const char* message) {
 void setup() {
   Serial.begin(SERIAL_CONSOLE_SPEED);
   pinMode(BUILTIN_LED, OUTPUT);
-  digitalWrite(BUILTIN_LED, LOW);
+  digitalWrite(BUILTIN_LED, HIGH);
 
   wifi.connect(WIFISSID, WIFIPASSWD);
   // ArduinoOTA.setPassword(ARDUINO_PASS);
@@ -76,18 +108,24 @@ void setup() {
   RFLibCallback afunc = &rfCallback;
   rf.setCallback(afunc);
 
-  digitalWrite(BUILTIN_LED, HIGH);
+  dht.begin();
+
+  flipper.setCallback(sendSensor);
+  flipper.setInterval(TEMP_INTERVAL);
+  flipper.start();
+
+  digitalWrite(BUILTIN_LED, LOW);
 }
 
 void loop() {
   // ArduinoOTA.handle();
-
   // delay(1000);
+  flipper.update();
   // digitalWrite(D4, LOW);
   // delay(500);
   // digitalWrite(D4, HIGH);
   rf.loop();
-  delay(10);
+  // delay(10);
   mqttlib.loop();
-  delay(10);
+  // delay(10);
 }

@@ -4,9 +4,14 @@ WiFiClientSecure _wificlient;
 MQTTClient _client;
 
 MqttLibCallback MqttLib::_callback;
+MqttLibErrorCallback MqttLib::_errorCallback;
 
 char* _username;
 char* _password;
+
+void MqttLib::setErrorCallback(MqttLibErrorCallback callback) {
+  MqttLib::_errorCallback = callback;
+}
 
 void MqttLib::setCallback(MqttLibCallback callback) {
   MqttLib::_callback = callback;
@@ -30,17 +35,27 @@ void MqttLib::init(char* host, int port, char* username, char* password) {
 
 void MqttLib::publish(const char* topic, const char* message) {
   if (! _client.connected()) {
-    MqttLib::connect();
+    if (! MqttLib::connect()) {
+        return;
+    }
   }
   _client.publish(topic, message);
 }
 
-void MqttLib::connect() {
+bool MqttLib::connect() {
+  int i = 0;
   while (!_client.connect("arduino", _username, _password)) {
     Serial.print(".");
     delay(1000);
+    if (i >= 60) {
+      if (MqttLib::_errorCallback != NULL) {
+        (*MqttLib::_errorCallback)();
+      }
+      return false;
+    }
   }
   Serial.println("MQTT connected");
+  return true;
 }
 
 void MqttLib::subscribe(const char *topic) {
