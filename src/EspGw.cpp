@@ -20,11 +20,14 @@ RFLib rf;
 #include <WifiLib.h>
 WifiLib wifi;
 
-#include <DHT.h>
-DHT dht(DHTPIN, DHT22);
+// #include <DHT.h>
+// DHT dht(DHTPIN, DHT22);
 
 #include <Ticker.h>
 Ticker flipper;
+
+#include <DS18B20.h>
+DS18B20 tempChip;
 
 String getChipId() {
     uint8_t chipid[6];
@@ -34,38 +37,20 @@ String getChipId() {
       id += String(chipid[i], HEX);
     }
     return id;
-    // Serial.printf("%02x:%02x:%02x:%02x:%02x:%02x\n", chipid[0], chipid[1], chipid[2], chipid[3], chipid[4], chipid[5]);
 }
 
 void sendSensor() {
-
-  int i = 0;
-  int tryHarder = 0;
-  float h = 0;
-  float t = 0;
-  while (i <= tryHarder && (isnan(h) || h==0 ) ) {
-    Serial.println("Trying to read from DHT sensor!");
-    // Serial.println(i);
-    h = dht.readHumidity();
-    t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
-    i = i + 1;
-  }
-
-  if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
-
   Serial.println("Sending Info through mqtt");
+
+  float temp = tempChip.getTemperature();
 
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& message = jsonBuffer.createObject();
-  message["temperature"] = t;
-  message["humidity"] = h;
+  message["temperature"] = temp;
 
   JsonObject& root = jsonBuffer.createObject();
   root["sensor"] = getChipId();
-  root["protocol"] = "dht";
+  root["protocol"] = "temperature";
   root["data"] = message;
   char buffer[150];
   root.printTo(buffer);
@@ -103,6 +88,13 @@ void rfCallback(const char* protocol, const char* message) {
   mqttlib.publish(MQTT_TOPIC_OUT, buffer);
 }
 
+float readTemperature() {
+  Serial.println("Reading Temp...");
+  float temp = tempChip.getTemperature();
+  Serial.println(temp);
+  return temp;
+}
+
 void setup() {
   Serial.begin(SERIAL_CONSOLE_SPEED);
   pinMode(BUILTIN_LED, OUTPUT);
@@ -121,7 +113,8 @@ void setup() {
   RFLibCallback afunc = &rfCallback;
   rf.setCallback(afunc);
 
-  dht.begin();
+  // dht.begin();
+  tempChip.init(DHTPIN);
 
   flipper.setCallback(sendSensor);
   flipper.setInterval(TEMP_INTERVAL);
