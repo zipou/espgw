@@ -112,7 +112,7 @@ boolean DS18B20::readTemperature() {
   Serial.println(" Fahrenheit");
   _temperature = celsius;
 
-  if ( celsius > 100){
+  if ( celsius > 100 && celsius > 0){
     return false;
   }
 
