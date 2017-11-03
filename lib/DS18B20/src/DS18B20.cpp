@@ -8,7 +8,7 @@ void DS18B20::init(int pin) {
 
 float DS18B20::getTemperature() {
   while(!readTemperature()) {
-    Serial.println("Looping...");
+    // Serial.println("Looping...");
   }
   return _temperature;
 
@@ -23,17 +23,17 @@ boolean DS18B20::readTemperature() {
   float celsius, fahrenheit;
 
   if ( !_oneWire->search(addr)) {
-    Serial.println("No more addresses.");
-    Serial.println();
+    // Serial.println("No more addresses.");
+    // Serial.println();
     _oneWire->reset_search();
     delay(250);
     return false;
   }
 
-  Serial.print("ROM =");
+  // Serial.print("ROM =");
   for( i = 0; i < 8; i++) {
-    Serial.write(' ');
-    Serial.print(addr[i], HEX);
+    // Serial.write(' ');
+    // Serial.print(addr[i], HEX);
   }
 
   if (OneWire::crc8(addr, 7) != addr[7]) {
@@ -44,21 +44,21 @@ boolean DS18B20::readTemperature() {
 
   // the first ROM byte indicates which chip
   switch (addr[0]) {
-    case 0x10:
-      Serial.println("  Chip = DS18S20");  // or old DS1820
-      type_s = 1;
-      break;
+    // case 0x10:
+    //   Serial.println("  Chip = DS18S20");  // or old DS1820
+    //   type_s = 1;
+    //   break;
     case 0x28:
-      Serial.println("  Chip = DS18B20");
+      // Serial.println("  Chip = DS18B20");
       type_s = 0;
       break;
-    case 0x22:
-      Serial.println("  Chip = DS1822");
-      type_s = 0;
-      break;
-    default:
-      Serial.println("Device is not a DS18x20 family device.");
-      return false;
+    // case 0x22:
+    //   Serial.println("  Chip = DS1822");
+    //   type_s = 0;
+    //   break;
+    // default:
+    //   Serial.println("Device is not a DS18x20 family device.");
+    //   return false;
   }
 
   _oneWire->reset();
@@ -72,17 +72,17 @@ boolean DS18B20::readTemperature() {
   _oneWire->select(addr);
   _oneWire->write(0xBE);         // Read Scratchpad
 
-  Serial.print("  Data = ");
-  Serial.print(present, HEX);
-  Serial.print(" ");
+  // Serial.print("  Data = ");
+  // Serial.print(present, HEX);
+  // Serial.print(" ");
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
     data[i] = _oneWire->read();
-    Serial.print(data[i], HEX);
-    Serial.print(" ");
+    // Serial.print(data[i], HEX);
+    // Serial.print(" ");
   }
-  Serial.print(" CRC=");
-  Serial.print(OneWire::crc8(data, 8), HEX);
-  Serial.println();
+  // Serial.print(" CRC=");
+  // Serial.print(OneWire::crc8(data, 8), HEX);
+  // Serial.println();
 
   // Convert the data to actual temperature
   // because the result is a 16 bit signed integer, it should
@@ -105,14 +105,14 @@ boolean DS18B20::readTemperature() {
   }
   celsius = (float)raw / 16.0;
   fahrenheit = celsius * 1.8 + 32.0;
-  Serial.print("  Temperature = ");
-  Serial.print(celsius);
-  Serial.print(" Celsius, ");
-  Serial.print(fahrenheit);
-  Serial.println(" Fahrenheit");
+  // Serial.print("  Temperature = ");
+  // Serial.print(celsius);
+  // Serial.print(" Celsius, ");
+  // Serial.print(fahrenheit);
+  // Serial.println(" Fahrenheit");
   _temperature = celsius;
 
-  if ( celsius > 100 && celsius > 0){
+  if ( celsius > 100 || celsius < 0){
     return false;
   }
 

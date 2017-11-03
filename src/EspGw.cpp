@@ -7,7 +7,7 @@
 // #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <BlynkSimpleEsp32.h>
+// #include <BlynkSimpleEsp32.h>
 
 #include <ArduinoJson.h>
 
@@ -28,6 +28,9 @@ Ticker flipper;
 
 #include <DS18B20.h>
 DS18B20 tempChip;
+
+// #include <Ble.h>
+// Ble ble;
 
 String getChipId() {
     uint8_t chipid[6];
@@ -67,10 +70,8 @@ void mqttCallback(const char* topic, const char* message) {
       JsonObject& root = jsonBuffer.parseObject(message);
       const char* protocol = root["protocol"];
       const char* data = root["data"];
+
       rf.send((char*) protocol, (char*) data);
-      // Serial.println(protocol);
-      // Serial.println(data);
-      // Serial.println("PROTOCOL CODE SENT");
   }
 }
 
@@ -95,7 +96,14 @@ float readTemperature() {
   return temp;
 }
 
+// void scanBle() {
+//   ble.scan();
+// }
+
 void setup() {
+
+  // ble.init();
+
   Serial.begin(SERIAL_CONSOLE_SPEED);
   pinMode(BUILTIN_LED, OUTPUT);
   digitalWrite(BUILTIN_LED, HIGH);
@@ -109,6 +117,7 @@ void setup() {
   mqttlib.setCallback(mqttCb);
   mqttlib.subscribe(MQTT_TOPIC_IN);
   mqttlib.subscribe(MQTT_TOPIC_IN_RAW);
+
   rf.init(RF_TRANSMITTER_PIN, RF_RECEIVER_PIN);
   RFLibCallback afunc = &rfCallback;
   rf.setCallback(afunc);
@@ -130,7 +139,9 @@ void loop() {
   // digitalWrite(D4, LOW);
   // delay(500);
   // digitalWrite(D4, HIGH);
+
   rf.loop();
+
   // delay(10);
   mqttlib.loop();
   // delay(10);
