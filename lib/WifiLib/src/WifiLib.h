@@ -6,10 +6,13 @@
 class WifiLib {
 
  public:
+  static char* _ssid;
+  static char* _password;
+  WifiLib(char* ssid, char* password);
 
-  WifiLib();
-
-  void connect(char* ssid, char* password);
+  void connect();
+  void checkAndReconnect();
+  boolean isConnected();
 
   WiFiClientSecure getClient();
 

@@ -7,9 +7,19 @@ void DS18B20::init(int pin) {
 }
 
 float DS18B20::getTemperature() {
-  while(!readTemperature()) {
-    // Serial.println("Looping...");
+  int maxLoop = 30;
+  int loop = 0;
+  while(!readTemperature() && loop < maxLoop ) {
+    Serial.print(".");
+    // Serial.print(loop);
+    loop = loop+ 1;
   }
+
+  if (loop == maxLoop) {
+    Serial.println("Max Loop Reached");
+  }
+
+  Serial.println(_temperature);
   return _temperature;
 
 }
@@ -26,21 +36,21 @@ boolean DS18B20::readTemperature() {
     // Serial.println("No more addresses.");
     // Serial.println();
     _oneWire->reset_search();
-    delay(250);
+    // delay(250);
     return false;
   }
 
   // Serial.print("ROM =");
-  for( i = 0; i < 8; i++) {
-    // Serial.write(' ');
-    // Serial.print(addr[i], HEX);
-  }
+  // for( i = 0; i < 8; i++) {
+  //   // Serial.write(' ');
+  //   // Serial.print(addr[i], HEX);
+  // }
 
   if (OneWire::crc8(addr, 7) != addr[7]) {
       Serial.println("CRC is not valid!");
       return false;
   }
-  Serial.println();
+  // Serial.println();
 
   // the first ROM byte indicates which chip
   switch (addr[0]) {

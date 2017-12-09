@@ -18,7 +18,7 @@ MqttLib mqttlib;
 RFLib rf;
 
 #include <WifiLib.h>
-WifiLib wifi;
+WifiLib wifi = WifiLib(WIFISSID, WIFIPASSWD);
 
 // #include <DHT.h>
 // DHT dht(DHTPIN, DHT22);
@@ -47,7 +47,7 @@ void sendSensor() {
 
   float temp = tempChip.getTemperature();
 
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<250> jsonBuffer;
   JsonObject& message = jsonBuffer.createObject();
   message["temperature"] = temp;
 
@@ -55,7 +55,7 @@ void sendSensor() {
   root["sensor"] = getChipId();
   root["protocol"] = "temperature";
   root["data"] = message;
-  char buffer[150];
+  char buffer[250];
   root.printTo(buffer);
   mqttlib.publish(MQTT_TOPIC_OUT, buffer);
 
@@ -76,15 +76,15 @@ void mqttCallback(const char* topic, const char* message) {
 }
 
 void rfCallback(const char* protocol, const char* message) {
-  // Serial.println("RF Callback HAS BEEN CALED");
-  // Serial.println(protocol);
-  // Serial.println(message);
-  StaticJsonBuffer<200> jsonBuffer;
+  Serial.println("RF Callback HAS BEEN CALED");
+  Serial.println(protocol);
+  Serial.println(message);
+  StaticJsonBuffer<250> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["sensor"] = getChipId();
   root["protocol"] = protocol;
   root["data"] = message;
-  char buffer[150];
+  char buffer[250];
   root.printTo(buffer);
   mqttlib.publish(MQTT_TOPIC_OUT, buffer);
 }
@@ -108,7 +108,7 @@ void setup() {
   pinMode(BUILTIN_LED, OUTPUT);
   digitalWrite(BUILTIN_LED, HIGH);
 
-  wifi.connect(WIFISSID, WIFIPASSWD);
+  wifi.connect();
   // ArduinoOTA.setPassword(ARDUINO_PASS);
   // ArduinoOTA.begin();
 
@@ -144,5 +144,6 @@ void loop() {
 
   // delay(10);
   mqttlib.loop();
+  wifi.checkAndReconnect();
   // delay(10);
 }
