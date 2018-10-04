@@ -1,0 +1,32 @@
+#include <Arduino.h>
+
+#include <DS18B20.h>
+DS18B20 tempChip;
+
+void readTemperature() {
+  Serial.println("Reading Temp...");
+  float temp = tempChip.getTemperature();
+  Serial.println(temp);
+  // return temp;
+}
+
+#include <Ticker.h>
+Ticker timer1(readTemperature, 2000);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(2, OUTPUT);
+  digitalWrite(2, HIGH);
+
+  // dht.begin();
+  tempChip.init(25);
+  timer1.start();
+
+  digitalWrite(2, LOW);
+}
+
+void loop() {
+
+  timer1.update();
+
+}

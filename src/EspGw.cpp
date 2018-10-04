@@ -23,9 +23,6 @@ WifiLib wifi = WifiLib(WIFISSID, WIFIPASSWD);
 // #include <DHT.h>
 // DHT dht(DHTPIN, DHT22);
 
-#include <Ticker.h>
-Ticker flipper;
-
 #include <DS18B20.h>
 DS18B20 tempChip;
 
@@ -41,6 +38,14 @@ String getChipId() {
     }
     return id;
 }
+
+void getTemperature() {
+  Serial.println("Trying to read temperature");
+  float temp = tempChip.getTemperature();
+  Serial.println(temp);
+}
+
+
 
 void sendSensor() {
   Serial.println("Sending Info through mqtt");
@@ -89,12 +94,17 @@ void rfCallback(const char* protocol, const char* message) {
   mqttlib.publish(MQTT_TOPIC_OUT, buffer);
 }
 
-float readTemperature() {
+void readTemperature() {
   Serial.println("Reading Temp...");
   float temp = tempChip.getTemperature();
   Serial.println(temp);
-  return temp;
+  // return temp;
 }
+
+
+#include <Ticker.h>
+Ticker timer1(readTemperature, 2000);
+
 
 // void scanBle() {
 //   ble.scan();
@@ -125,9 +135,10 @@ void setup() {
   // dht.begin();
   tempChip.init(DHTPIN);
 
-  flipper.setCallback(sendSensor);
-  flipper.setInterval(TEMP_INTERVAL);
-  flipper.start();
+  // flipper.setCallback(getTemperature);
+  // flipper.setInterval(TEMP_INTERVAL);
+  // flipper.start();
+  timer1.start();
 
   digitalWrite(BUILTIN_LED, LOW);
 }
@@ -135,7 +146,7 @@ void setup() {
 void loop() {
   // ArduinoOTA.handle();
   // delay(1000);
-  flipper.update();
+  // flipper.update();
   // digitalWrite(D4, LOW);
   // delay(500);
   // digitalWrite(D4, HIGH);
@@ -145,5 +156,6 @@ void loop() {
   // delay(10);
   mqttlib.loop();
   wifi.checkAndReconnect();
+
   // delay(10);
 }

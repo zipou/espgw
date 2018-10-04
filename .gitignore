@@ -3,3 +3,7 @@
 .clang_complete
 .gcc-flags.json
 src/const.h
+.vscode/c_cpp_properties.json
+.vscode
+.vscode/.browse.c_cpp.db*
+.vscode/launch.json

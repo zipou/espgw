@@ -25,12 +25,13 @@ float DS18B20::getTemperature() {
 }
 
 boolean DS18B20::readTemperature() {
+  return false;
   byte i;
   byte present = 0;
   byte type_s;
   byte data[12];
   byte addr[8];
-  float celsius, fahrenheit;
+  float celsius;
 
   if ( !_oneWire->search(addr)) {
     // Serial.println("No more addresses.");
@@ -114,7 +115,6 @@ boolean DS18B20::readTemperature() {
     //// default is 12 bit resolution, 750 ms conversion time
   }
   celsius = (float)raw / 16.0;
-  fahrenheit = celsius * 1.8 + 32.0;
   // Serial.print("  Temperature = ");
   // Serial.print(celsius);
   // Serial.print(" Celsius, ");
