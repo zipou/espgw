@@ -33,6 +33,9 @@ void MqttLib::setCallback(MqttLibCallback callback) {
       Serial.println("Message Recived Through MQTT with id");
       Serial.println(id);
 
+      MqttLib::acknowledge(payload);
+
+
       //Acknowledging
       StaticJsonBuffer<250> jsonAckBuffer;
       JsonObject& rootAck = jsonAckBuffer.createObject();
@@ -41,13 +44,14 @@ void MqttLib::setCallback(MqttLibCallback callback) {
       char charBuffer[250];
       rootAck.printTo(charBuffer);
 
+
       // StaticJsonBuffer<250> ackBuffer;
       // JsonObject& ackMessage = ackBuffer.createObject();
       // ackMessage["type"] = "acknowledge";
       // ackMessage["id"] = id;
       // char buffer[250];
       // ackMessage.printTo(ackBuffer);
-      _client.publish("esp_out", charBuffer);
+      _client.publish("esp_ack", charBuffer);
 
       if (MqttLib::_callback != NULL) {
         (*MqttLib::_callback)(topic.c_str(), payload.c_str());

@@ -7,7 +7,7 @@ void DS18B20::init(int pin) {
 }
 
 float DS18B20::getTemperature() {
-  int maxLoop = 30;
+  int maxLoop = 100;
   int loop = 0;
   while(!readTemperature() && loop < maxLoop ) {
     Serial.print(".");
@@ -25,7 +25,6 @@ float DS18B20::getTemperature() {
 }
 
 boolean DS18B20::readTemperature() {
-  return false;
   byte i;
   byte present = 0;
   byte type_s;
@@ -57,19 +56,19 @@ boolean DS18B20::readTemperature() {
   switch (addr[0]) {
     // case 0x10:
     //   Serial.println("  Chip = DS18S20");  // or old DS1820
-    //   type_s = 1;
-    //   break;
+      type_s = 1;
+      break;
     case 0x28:
       // Serial.println("  Chip = DS18B20");
       type_s = 0;
       break;
     // case 0x22:
     //   Serial.println("  Chip = DS1822");
-    //   type_s = 0;
-    //   break;
+      type_s = 0;
+      break;
     // default:
-    //   Serial.println("Device is not a DS18x20 family device.");
-    //   return false;
+      Serial.println("Device is not a DS18x20 family device.");
+      return false;
   }
 
   _oneWire->reset();

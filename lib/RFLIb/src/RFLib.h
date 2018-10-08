@@ -1,4 +1,5 @@
 #include <ESPiLight.h>
+#include <RCSwitch.h>
 
 typedef void (*RFLibCallback)(const char* protocol, const char* message);
 
@@ -15,4 +16,5 @@ class RFLib {
     static RFLibCallback _callback;
   private:
     ESPiLight* _rf;
+    RCSwitch _rc;
 };

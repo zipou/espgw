@@ -1,15 +1,23 @@
 
-#define ICACHE_RAM_ATTR IRAM_ATTR
+// #define ICACHE_RAM_ATTR IRAM_ATTR
 
-#include <const.h>
+#include "const.h"
 #include <Arduino.h>
 // #include <ESP8266mDNS.h>
+// #include <ESPmDNS.h>
 // #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 // #include <BlynkSimpleEsp32.h>
 
+// #include <ESPmDNS.h>
+// #include <WiFiUdp.h>
+// #include <ArduinoOTA.h>
+
 #include <ArduinoJson.h>
+
+// #include <EasyOTA.h>
+// EasyOTA OTA("arduino_hostname");
 
 #include <MqttLib.h>
 MqttLib mqttlib;
@@ -20,9 +28,6 @@ RFLib rf;
 #include <WifiLib.h>
 WifiLib wifi = WifiLib(WIFISSID, WIFIPASSWD);
 
-// #include <DHT.h>
-// DHT dht(DHTPIN, DHT22);
-
 #include <DS18B20.h>
 DS18B20 tempChip;
 
@@ -31,7 +36,7 @@ DS18B20 tempChip;
 
 String getChipId() {
     uint8_t chipid[6];
-    esp_efuse_read_mac(chipid);
+    esp_efuse_mac_get_default(chipid);
     String id= "";
     for (int i = 0; i<= 5; i++) {
       id += String(chipid[i], HEX);
@@ -46,9 +51,8 @@ void getTemperature() {
 }
 
 
-
-void sendSensor() {
-  Serial.println("Sending Info through mqtt");
+void sendTemperature() {
+  // Serial.println("Sending Info through mqtt");
 
   float temp = tempChip.getTemperature();
 
@@ -67,9 +71,6 @@ void sendSensor() {
 }
 
 void mqttCallback(const char* topic, const char* message) {
-  // Serial.println("MQTTCallback");
-  // Serial.println(topic);
-  // Serial.println(message);
   if (strcmp(topic, MQTT_TOPIC_IN) == 0) {
       StaticJsonBuffer<200> jsonBuffer;
       JsonObject& root = jsonBuffer.parseObject(message);
@@ -95,24 +96,17 @@ void rfCallback(const char* protocol, const char* message) {
 }
 
 void readTemperature() {
-  Serial.println("Reading Temp...");
+  // Serial.println("Reading Temp...");
   float temp = tempChip.getTemperature();
-  Serial.println(temp);
+  // Serial.println(temp);
   // return temp;
 }
 
 
 #include <Ticker.h>
-Ticker timer1(readTemperature, 2000);
-
-
-// void scanBle() {
-//   ble.scan();
-// }
+Ticker timer1(sendTemperature, 10000);
 
 void setup() {
-
-  // ble.init();
 
   Serial.begin(SERIAL_CONSOLE_SPEED);
   pinMode(BUILTIN_LED, OUTPUT);
@@ -132,28 +126,15 @@ void setup() {
   RFLibCallback afunc = &rfCallback;
   rf.setCallback(afunc);
 
-  // dht.begin();
   tempChip.init(DHTPIN);
-
-  // flipper.setCallback(getTemperature);
-  // flipper.setInterval(TEMP_INTERVAL);
-  // flipper.start();
   timer1.start();
 
   digitalWrite(BUILTIN_LED, LOW);
 }
 
 void loop() {
-  // ArduinoOTA.handle();
-  // delay(1000);
-  // flipper.update();
-  // digitalWrite(D4, LOW);
-  // delay(500);
-  // digitalWrite(D4, HIGH);
-
+  timer1.update();
   rf.loop();
-
-  // delay(10);
   mqttlib.loop();
   wifi.checkAndReconnect();
 

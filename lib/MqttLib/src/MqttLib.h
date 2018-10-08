@@ -13,7 +13,7 @@ class MqttLib {
      void loop();
      void publish(const char* topic, const char* message);
      void ack(String &topic, String &payload);
-     void acknowledge(String payload);
+     void static acknowledge(String payload);
      void subscribe(const char* topic);
      void setCallback(MqttLibCallback _callback);
      void setErrorCallback(MqttLibErrorCallback _errorCallback);
