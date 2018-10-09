@@ -104,7 +104,7 @@ void readTemperature() {
 
 
 #include <Ticker.h>
-Ticker timer1(sendTemperature, 10000);
+Ticker timer1(sendTemperature, TEMP_INTERVAL);
 
 void setup() {
 
