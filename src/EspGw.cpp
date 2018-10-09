@@ -50,6 +50,11 @@ void getTemperature() {
   Serial.println(temp);
 }
 
+void restartEsp() {
+  Serial.println("Restarting ESP");
+  ESP.restart();
+}
+
 
 void sendTemperature() {
   // Serial.println("Sending Info through mqtt");
@@ -82,9 +87,9 @@ void mqttCallback(const char* topic, const char* message) {
 }
 
 void rfCallback(const char* protocol, const char* message) {
-  Serial.println("RF Callback HAS BEEN CALED");
-  Serial.println(protocol);
-  Serial.println(message);
+  // Serial.println("RF Callback HAS BEEN CALED");
+  // Serial.println(protocol);
+  // Serial.println(message);
   StaticJsonBuffer<250> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["sensor"] = getChipId();
@@ -95,16 +100,17 @@ void rfCallback(const char* protocol, const char* message) {
   mqttlib.publish(MQTT_TOPIC_OUT, buffer);
 }
 
-void readTemperature() {
-  // Serial.println("Reading Temp...");
-  float temp = tempChip.getTemperature();
-  // Serial.println(temp);
-  // return temp;
-}
+// void readTemperature() {
+//   // Serial.println("Reading Temp...");
+//   // float temp = tempChip.getTemperature();
+//   // Serial.println(temp);
+//   // return temp;
+// }
 
 
 #include <Ticker.h>
 Ticker timer1(sendTemperature, TEMP_INTERVAL);
+Ticker timer2(restartEsp, RESTART_INTERVAL);
 
 void setup() {
 
@@ -128,12 +134,14 @@ void setup() {
 
   tempChip.init(DHTPIN);
   timer1.start();
+  timer2.start();
 
   digitalWrite(BUILTIN_LED, LOW);
 }
 
 void loop() {
   timer1.update();
+  timer2.update();
   rf.loop();
   mqttlib.loop();
   wifi.checkAndReconnect();
