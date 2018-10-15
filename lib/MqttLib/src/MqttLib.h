@@ -8,7 +8,7 @@ class MqttLib {
 
    public:
      MqttLib();
-     void init(char* host, int  port, char* username, char* password);
+     void init(char* host, int  port, char* username, char* password, char* clientId);
      bool connect();
      void loop();
      void publish(const char* topic, const char* message);

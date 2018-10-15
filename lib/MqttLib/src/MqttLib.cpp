@@ -10,6 +10,7 @@ MqttLibErrorCallback MqttLib::_errorCallback;
 
 char* _username;
 char* _password;
+char* _clientId;
 
 void MqttLib::setErrorCallback(MqttLibErrorCallback callback) {
   MqttLib::_errorCallback = callback;
@@ -71,10 +72,11 @@ void MqttLib::acknowledge(String payload) {
   Serial.println(id);
 }
 
-void MqttLib::init(char* host, int port, char* username, char* password) {
+void MqttLib::init(char* host, int port, char* username, char* password, char* clientId) {
   _client.begin(host, port, _wificlient);
   _username= username;
   _password= password;
+  _clientId= clientId;
   MqttLib::connect();
 }
 
@@ -89,7 +91,7 @@ void MqttLib::publish(const char* topic, const char* message) {
 
 bool MqttLib::connect() {
   int i = 0;
-  while (!_client.connect("arduino", _username, _password)) {
+  while (!_client.connect(_clientId, _username, _password)) {
     Serial.print(".");
     delay(1000);
     if (i >= 60) {

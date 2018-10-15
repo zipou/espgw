@@ -31,6 +31,9 @@ WifiLib wifi = WifiLib(WIFISSID, WIFIPASSWD);
 #include <DS18B20.h>
 DS18B20 tempChip;
 
+#include <OTA.h>
+OTA otaUpdate;
+
 // #include <Ble.h>
 // Ble ble;
 
@@ -73,6 +76,11 @@ void sendTemperature() {
   root.printTo(buffer);
   mqttlib.publish(MQTT_TOPIC_OUT, buffer);
 
+}
+
+void mqttErrorCallback() {
+  Serial.println("Error with MQTT, restarting ESP");
+  restartEsp();
 }
 
 void mqttCallback(const char* topic, const char* message) {
@@ -123,8 +131,14 @@ void setup() {
   // ArduinoOTA.begin();
 
   MqttLibCallback mqttCb = &mqttCallback;
-  mqttlib.init(MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD);
+  // MqttLibCallback mqttCb = &mqttCallback;
+  char clientId[15];
+  getChipId().toCharArray(clientId, 15);
+  Serial.println("ClientId");
+  Serial.println(clientId);
+  mqttlib.init(MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, clientId);
   mqttlib.setCallback(mqttCb);
+  mqttlib.setErrorCallback(mqttErrorCallback);
   mqttlib.subscribe(MQTT_TOPIC_IN);
   mqttlib.subscribe(MQTT_TOPIC_IN_RAW);
 
@@ -132,19 +146,34 @@ void setup() {
   RFLibCallback afunc = &rfCallback;
   rf.setCallback(afunc);
 
-  tempChip.init(DHTPIN);
-  timer1.start();
+
+  otaUpdate.init(8080);
+
+
+  if (ENABLE_TEMP_SENSOR) {
+    tempChip.init(DHTPIN);
+    timer1.start();
+  }
   timer2.start();
 
   digitalWrite(BUILTIN_LED, LOW);
 }
 
 void loop() {
-  timer1.update();
+  if (ENABLE_TEMP_SENSOR) {
+    timer1.update();
+  }
   timer2.update();
-  rf.loop();
-  mqttlib.loop();
-  wifi.checkAndReconnect();
 
+  if (ENABLE_RF_RECEIVE) {
+    rf.loop();
+  }
+
+  if (ENABLE_RF_SEND) {
+    mqttlib.loop();
+  }
+
+  wifi.checkAndReconnect();
+  otaUpdate.loop();
   // delay(10);
 }
