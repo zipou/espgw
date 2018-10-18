@@ -17,14 +17,8 @@ void MqttLib::setErrorCallback(MqttLibErrorCallback callback) {
 }
 
 
-void static ack(String &topic, String &payload) {
-
-}
-
 void MqttLib::setCallback(MqttLibCallback callback) {
   MqttLib::_callback = callback;
-
-
 
   struct call {
     static void a(String &topic, String &payload) {
@@ -74,6 +68,8 @@ void MqttLib::acknowledge(String payload) {
 
 void MqttLib::init(char* host, int port, char* username, char* password, char* clientId) {
   _client.begin(host, port, _wificlient);
+  // _client.setTimeout(500);
+  _client.setOptions(2, true, 500);
   _username= username;
   _password= password;
   _clientId= clientId;
@@ -91,15 +87,18 @@ void MqttLib::publish(const char* topic, const char* message) {
 
 bool MqttLib::connect() {
   int i = 0;
+  Serial.print("Trying to connect to MQTT");
+  // while (true) {
   while (!_client.connect(_clientId, _username, _password)) {
     Serial.print(".");
     delay(1000);
-    if (i >= 60) {
+    if (i >= 10) {
       if (MqttLib::_errorCallback != NULL) {
         (*MqttLib::_errorCallback)();
       }
       return false;
     }
+    ++i;
   }
   Serial.println("MQTT connected");
   return true;

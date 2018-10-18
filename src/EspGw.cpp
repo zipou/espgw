@@ -136,9 +136,9 @@ void setup() {
   getChipId().toCharArray(clientId, 15);
   Serial.println("ClientId");
   Serial.println(clientId);
+  mqttlib.setErrorCallback(mqttErrorCallback);
   mqttlib.init(MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, clientId);
   mqttlib.setCallback(mqttCb);
-  mqttlib.setErrorCallback(mqttErrorCallback);
   mqttlib.subscribe(MQTT_TOPIC_IN);
   mqttlib.subscribe(MQTT_TOPIC_IN_RAW);
 
