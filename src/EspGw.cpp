@@ -3,21 +3,8 @@
 
 #include "const.h"
 #include <Arduino.h>
-// #include <ESP8266mDNS.h>
-// #include <ESPmDNS.h>
-// #include <ArduinoOTA.h>
-#include <WiFi.h>
 #include <WiFiClient.h>
-// #include <BlynkSimpleEsp32.h>
-
-// #include <ESPmDNS.h>
-// #include <WiFiUdp.h>
-// #include <ArduinoOTA.h>
-
 #include <ArduinoJson.h>
-
-// #include <EasyOTA.h>
-// EasyOTA OTA("arduino_hostname");
 
 #include <MqttLib.h>
 MqttLib mqttlib;
@@ -38,13 +25,18 @@ OTA otaUpdate;
 // Ble ble;
 
 String getChipId() {
-    uint8_t chipid[6];
-    esp_efuse_mac_get_default(chipid);
-    String id= "";
-    for (int i = 0; i<= 5; i++) {
-      id += String(chipid[i], HEX);
-    }
-    return id;
+
+  // uint32_t chipid=ESP.getChipId();
+  // char clientid[25];
+  // snprintf(clientid,25,"%08X",chipid);
+  // Serial.print("Client ID: ");
+  // Serial.println(clientid);
+    return String(ESP.getChipId());
+    // String id= "";
+    // for (int i = 0; i<= 5; i++) {
+    //   id += String(chipid[i], HEX);
+    // }
+    // return id;
 }
 
 void getTemperature() {
@@ -147,7 +139,7 @@ void setup() {
   rf.setCallback(afunc);
 
 
-  otaUpdate.init(8080);
+  // otaUpdate.init(8080);
 
 
   if (ENABLE_TEMP_SENSOR) {
