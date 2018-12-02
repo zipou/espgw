@@ -118,7 +118,7 @@ void rfCallback(const char* protocol, const char* message) {
 
 #include <Ticker.h>
 Ticker timer1(sendTemperature, TEMP_INTERVAL);
-Ticker timer2(restartEsp, RESTART_INTERVAL);
+// Ticker timer2(restartEsp, RESTART_INTERVAL);
 
 void setup() {
 
@@ -154,7 +154,7 @@ void setup() {
     tempChip.init(DHTPIN);
     timer1.start();
   }
-  timer2.start();
+  // timer2.start();
 
   digitalWrite(BUILTIN_LED, LOW);
 }
@@ -163,7 +163,7 @@ void loop() {
   if (ENABLE_TEMP_SENSOR) {
     timer1.update();
   }
-  timer2.update();
+  // timer2.update();
 
   if (ENABLE_RF_RECEIVE) {
     rf.loop();
