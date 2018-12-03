@@ -83,6 +83,11 @@ void mqttErrorCallback() {
   restartEsp();
 }
 
+void mqttConnectCallback() {
+  mqttlib.subscribe(MQTT_TOPIC_IN);
+  mqttlib.subscribe(MQTT_TOPIC_IN_RAW);
+}
+
 void mqttCallback(const char* topic, const char* message) {
   if (strcmp(topic, MQTT_TOPIC_IN) == 0) {
       StaticJsonBuffer<200> jsonBuffer;
@@ -137,10 +142,11 @@ void setup() {
   Serial.println("ClientId");
   Serial.println(clientId);
   mqttlib.setErrorCallback(mqttErrorCallback);
+  mqttlib.setConnectCallback(mqttConnectCallback);
   mqttlib.init(MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, clientId);
   mqttlib.setCallback(mqttCb);
-  mqttlib.subscribe(MQTT_TOPIC_IN);
-  mqttlib.subscribe(MQTT_TOPIC_IN_RAW);
+  // mqttlib.subscribe(MQTT_TOPIC_IN);
+  // mqttlib.subscribe(MQTT_TOPIC_IN_RAW);
 
   rf.init(RF_TRANSMITTER_PIN, RF_RECEIVER_PIN);
   RFLibCallback afunc = &rfCallback;

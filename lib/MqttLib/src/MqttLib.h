@@ -3,6 +3,7 @@
 
 typedef void (*MqttLibCallback)(const char* topic, const char* payload);
 typedef void (*MqttLibErrorCallback)();
+typedef void (*MqttLibConnectCallback)();
 
 class MqttLib {
 
@@ -16,8 +17,10 @@ class MqttLib {
      void static acknowledge(String payload);
      void subscribe(const char* topic);
      void setCallback(MqttLibCallback _callback);
+     void setConnectCallback(MqttLibConnectCallback _connectCallback);
      void setErrorCallback(MqttLibErrorCallback _errorCallback);
      static MqttLibCallback _callback;
      static MqttLibErrorCallback _errorCallback;
+     static MqttLibConnectCallback _connectCallback;
    protected:
 };

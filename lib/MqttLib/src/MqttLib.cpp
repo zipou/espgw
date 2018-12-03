@@ -7,15 +7,20 @@ MQTTClient _client;
 
 MqttLibCallback MqttLib::_callback;
 MqttLibErrorCallback MqttLib::_errorCallback;
+MqttLibConnectCallback MqttLib::_connectCallback;
 
 char* _username;
 char* _password;
 char* _clientId;
+char* _topicList;
 
 void MqttLib::setErrorCallback(MqttLibErrorCallback callback) {
   MqttLib::_errorCallback = callback;
 }
 
+void MqttLib::setConnectCallback(MqttLibConnectCallback callback) {
+  MqttLib::_connectCallback = callback;
+}
 
 void MqttLib::setCallback(MqttLibCallback callback) {
   MqttLib::_callback = callback;
@@ -85,6 +90,8 @@ void MqttLib::publish(const char* topic, const char* message) {
   _client.publish(topic, message);
 }
 
+
+
 bool MqttLib::connect() {
   int i = 0;
   Serial.print("Trying to connect to MQTT");
@@ -101,6 +108,9 @@ bool MqttLib::connect() {
     ++i;
   }
   Serial.println("MQTT connected");
+  if (MqttLib::_connectCallback != NULL) {
+    (*MqttLib::_connectCallback)();
+  }
   return true;
 }
 
